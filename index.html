@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="results-mode" content="static">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArcsToSCFT · Theory Atlas</title>
+<link rel="stylesheet" href="./style.css">
+<script src="./app.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./">ArcsToSCFT <span>THEORY ATLAS</span></a><div class="top-actions"><span id="revision">Connecting to source results</span><button id="refresh" class="quiet">↻ Refresh</button></div></header>
+<div class="workspace">
+<aside class="sidebar" aria-label="Theory list">
+<div class="sidebar-title"><span class="eyebrow">RESEARCH COLLECTION</span><h1>Computed theories</h1><p>From indices to schemes.</p></div>
+<label class="search-label" for="search">Search theories</label><input id="search" type="search" placeholder="E6, SO(10), p3…" autocomplete="off">
+<div class="filters"><label>Lie type<select id="family"><option value="">All types</option></select></label><label>Status<select id="status"><option value="">All statuses</option><option value="closed">Finished campaigns</option><option value="schur-window">Schur jump + 2 checked</option><option value="finite-window">Finite-order checks</option><option value="partial">Partial verification</option><option value="obstruction">Model issue</option></select></label></div>
+<div class="list-caption"><span id="count">Loading</span><label class="check"><input id="unhiggsed" type="checkbox"> Y=0 only</label></div>
+<nav id="theories" aria-label="Select a theory"></nav>
+<div class="sidebar-foot">Explore stored results.<br>Calculations run separately.</div>
+</aside>
+<main id="main" tabindex="-1"><div class="welcome"><div class="eyebrow">ARCS → INDICES</div><h2>Loading results.</h2><p>Explore computed series together with their evidence.</p></div></main>
+</div>
+<div id="toast" role="status"></div>
+</body></html>
