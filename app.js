@@ -8,7 +8,7 @@ let catalog=[],record=null,selected='',tab='indices',datasetId='',form='macdonal
 const staticSite=document.querySelector('meta[name="results-mode"]')?.content==='static';
 const tabs=[['indices','Indices'],['flavor','Flavor characters'],['scheme','KLS scheme'],['evidence','Evidence & sources']];
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');setTimeout(()=>$('#toast').classList.remove('show'),2200)}
-async function api(url){if(staticSite){url=url==='/api/catalog'?'./data/catalog.json':'./data/theories/'+url.slice('/api/theories/'.length)+'.json'}const response=await fetch(url,{signal:AbortSignal.timeout(30000)});const data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to load results.');return data}
+async function api(url){if(staticSite){url=url==='/api/catalog'?'./data/catalog.json':'./data/theories/'+url.slice('/api/theories/'.length)+'.json'}const response=await fetch(url,{cache:'no-cache',signal:AbortSignal.timeout(30000)});const data=await response.json();if(!response.ok)throw new Error(data.error||'Unable to load results.');return data}
 function dataset(){return record.datasets.find(d=>d.id===datasetId)||record.datasets[0]}
 function polynomial(terms,v='T'){const pieces=terms.filter(t=>t.value!=='0').map(t=>{const exp=t.T??t.q;return exp==='0'?esc(t.value):`${t.value==='1'?'':esc(t.value)+' '}${power(v,exp)}`});return pieces.join(' + ').replace(/\+ -/g,'− ')||'0'}
 function orbitHTML(value){return esc(value).replace(/_(II|I)$/, ' <span class="orbit-branch">$1</span>')}
