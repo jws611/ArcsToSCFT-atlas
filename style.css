@@ -31,3 +31,12 @@
 @media(max-width:600px){.higgsing-identity{display:block;padding:15px 18px}.higgsing-value{font-size:28px}.higgsing-identity p{margin-top:9px}.orbit-value{font-size:13px}.theory-link .orbit{margin:4px 0 7px}.search-help{font-size:10px}.methods-intro h1{font-size:34px}.method-card h2{font-size:25px}.method-nav{padding:16px 20px;font-size:12px}.method-article{padding:24px 20px 60px}.method-article h1{font-size:34px}.method-article h2{font-size:26px}.method-article p,.method-article li{font-size:14px}.method-article .lead{font-size:16px}}
 
 .method-table{max-width:100%;overflow-x:auto;margin:18px 0}.method-table table{margin:0}.method-article code{overflow-wrap:anywhere}
+
+/* Keep each index window and its evidence attached to the correct series. */
+.index-scopes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 26px}
+.index-scope{display:flex;flex-direction:column;align-items:flex-start;border:1px solid var(--line);border-radius:7px;padding:16px;background:var(--wash);min-width:0}
+.index-scope h3{font-size:13px;margin:0 0 9px}.scope-cutoff{font:25px/1.4 var(--serif)}
+.index-scope p{font-size:12px;line-height:1.6;margin:8px 0}.index-scope p.small{font-size:10px;color:var(--muted)}
+.index-scope button{margin-top:auto;font-size:11px}.selected-scope{display:flex;flex-direction:column;gap:5px;border-left:3px solid #6e917b;background:#f0f5eb;padding:12px 15px;margin:16px 0;font-size:12px;line-height:1.6}
+.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:1100px){.index-scopes{grid-template-columns:1fr}.index-scope{display:block}.index-scope button{margin-top:9px}}
