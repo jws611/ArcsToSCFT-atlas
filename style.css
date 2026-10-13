@@ -51,3 +51,5 @@
 .verification-progress>h3{font-size:16px;margin:0 0 8px}.verification-step{display:grid;grid-template-columns:minmax(150px,1fr) 80px minmax(0,2fr);align-items:start;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
 .verification-step h3{font-size:12px;line-height:1.7}.verification-step .badge{justify-self:start}.verification-step p{font-size:12px;line-height:1.7;margin:0}.verification-progress>p{margin:13px 0 0}
 @media(max-width:850px){.verification-step{grid-template-columns:minmax(0,1fr) 80px}.verification-step p{grid-column:1 / -1}.verification-progress{padding:15px}}
+
+.tabs{flex-wrap:wrap;row-gap:0}
