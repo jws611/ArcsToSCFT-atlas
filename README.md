@@ -1,6 +1,6 @@
 # ArcsToSCFT Theory Atlas
 
-Public read-only snapshot generated 2026-10-16T04:48:38+00:00.
+Public read-only snapshot generated 2026-10-16T04:56:43+00:00.
 
 143 theories with stored indices, flavor characters and KLS schemes. Every dataset retains its verification cutoff, arithmetic and limitations. Partial results and finite-field evidence are not characteristic-zero completion proofs.
 
