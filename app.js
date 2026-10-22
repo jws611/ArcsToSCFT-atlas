@@ -88,8 +88,9 @@ function showIndex(name){
 function bindIndexSummary(){document.querySelectorAll('[data-index-form]').forEach(b=>b.onclick=()=>showIndex(b.dataset.indexForm))}
 
 function campaignProgressHTML(){
+  if(record.all_orders_point)return `<section class="verification-progress" aria-label="Campaign verification progress"><h3>Exact reduced-point model</h3><p>Macdonald = Schur = HL = 1 to all orders. The fixed and generic critical ideals are reduced points; the independent Schur expression vanishes identically.</p><p>Syzygy jump: inapplicable. This Higgsing has no coefficient-sensitive rank drop; the unhiggsed theory's jump is a separate result.</p></section>`;
   const c=record.completion;if(!c)return '';
-  const known=c.minimum_required_cutoff!=null,target=c.required_cutoff,extra=c.additional_orders;
+  const known=c.minimum_required_cutoff!=null,target=c.required_cutoff,extra=c.additional_orders??record.verification_plan?.additional_orders;
   const requested=record.requested_macdonald_cutoff;
   const requestedExtra=known&&requested!=null?degree(requested)-degree(c.minimum_required_cutoff):null;
   const requestedLabel=requestedExtra>0?`Requested Macdonald · jump + ${esc(requestedExtra)}`:'Requested Macdonald · through jump';
@@ -119,6 +120,7 @@ function covariantCorrectionHTML(){
   return `<div class="notice"><strong>Covariant filtration · HL repair</strong><p>${graphs.map(g=>`${esc(g.name)} = ∇I<sub>${esc(g.q_degree+1)}</sub>(M): (q,T) = (${esc(g.q_degree)}, ${esc(g.T_degree)})`).join('; ')}.</p><p>Exact corrected HL comparison: t ≤ ${esc(c.hl_verified_cutoff)}. Graph elimination preserves the Schur series. ${correctedMac?`Corrected Macdonald: q ≤ ${esc(correctedMac.cutoff)}, with both limits checked; ${reached?`mandatory jump reached. ${record.completion?.complete?'The selected extension is verified.':`The selected jump + ${esc(record.completion?.additional_orders??2)} extension remains pending.`}`:'still below the mandatory jump.'}`:'The corrected two-variable Macdonald series is pending.'} Historical scalar-graph records retain their original filtration.</p><p class="small">The T assignments are candidates. HL fixes the diagonal quotient, and does not uniquely determine the lower T degrees.</p></div>`;
 }
 function milestoneHTML(){
+  if(record.all_orders_point)return '<div class="milestones"><span class="match">Exact point model · all orders</span><span>Syzygy jump · inapplicable</span></div>';
   const c=record.completion;if(!c)return `<p class="small">${esc(record.status_label)} · see individual result evidence and finite windows.</p>`;
   const jump=c.minimum_required_cutoff, target=c.required_cutoff;
   return `<div class="milestones"><span class="${c.minimum_jump_verified?'match':'pending'}">${c.minimum_jump_verified?'✓ Syzygy jump':'Syzygy jump'} ${jump==null?'unknown':`q<sup>${esc(jump)}</sup>`} · ${c.minimum_jump_verified?'verified':'verification incomplete'}</span><span class="${c.complete?'match':'pending'}">Selected window ${target==null?'unknown':`q ≤ ${esc(target)}`} · ${c.complete?'complete':'pending'}</span></div>`;
