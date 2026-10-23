@@ -89,6 +89,7 @@ function bindIndexSummary(){document.querySelectorAll('[data-index-form]').forEa
 
 function campaignProgressHTML(){
   if(record.all_orders_point)return `<section class="verification-progress" aria-label="Campaign verification progress"><h3>Exact reduced-point model</h3><p>Macdonald = Schur = HL = 1 to all orders. The fixed and generic critical ideals are reduced points; the independent Schur expression vanishes identically.</p><p>Syzygy jump: inapplicable. This Higgsing has no coefficient-sensitive rank drop; the unhiggsed theory's jump is a separate result.</p></section>`;
+  if(record.coefficient_jump_inapplicable)return `<section class="verification-progress" aria-label="Campaign verification progress"><h3>Generic and fixed filtered models are isomorphic</h3><p>The exact relation reduction proves there is no coefficient-sensitive jump at these fixed coefficients.</p><p>Macdonald, Schur and HL checked through q ≤ ${esc(record.completion.verified_cutoff)} over QQ. The algebra isomorphism holds at every jet order; the physical index comparisons are finite.</p></section>`;
   const c=record.completion;if(!c)return '';
   const known=c.minimum_required_cutoff!=null,target=c.required_cutoff,extra=c.additional_orders??record.verification_plan?.additional_orders;
   const requested=record.requested_macdonald_cutoff;
@@ -121,6 +122,7 @@ function covariantCorrectionHTML(){
 }
 function milestoneHTML(){
   if(record.all_orders_point)return '<div class="milestones"><span class="match">Exact point model · all orders</span><span>Syzygy jump · inapplicable</span></div>';
+  if(record.coefficient_jump_inapplicable)return `<div class="milestones"><span class="match">QQ index and both limits · q ≤ ${esc(record.completion.verified_cutoff)}</span><span>Coefficient-sensitive jump · inapplicable</span></div>`;
   const c=record.completion;if(!c)return `<p class="small">${esc(record.status_label)} · see individual result evidence and finite windows.</p>`;
   const jump=c.minimum_required_cutoff, target=c.required_cutoff;
   return `<div class="milestones"><span class="${c.minimum_jump_verified?'match':'pending'}">${c.minimum_jump_verified?'✓ Syzygy jump':'Syzygy jump'} ${jump==null?'unknown':`q<sup>${esc(jump)}</sup>`} · ${c.minimum_jump_verified?'verified':'verification incomplete'}</span><span class="${c.complete?'match':'pending'}">Selected window ${target==null?'unknown':`q ≤ ${esc(target)}`} · ${c.complete?'complete':'pending'}</span></div>`;
