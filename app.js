@@ -41,24 +41,100 @@ function saveRoute(){
 function showSection(section){rememberView();tab=section;render();saveRoute();document.querySelector(`[data-tab="${tab}"]`)?.focus({preventScroll:true})}
 function polynomial(terms,v='T'){const pieces=terms.filter(t=>t.value!=='0').map(t=>{const exp=t.T??t.q;return exp==='0'?esc(t.value):`${t.value==='1'?'':esc(t.value)+' '}${power(v,exp)}`});return pieces.join(' + ').replace(/\+ -/g,'− ')||'0'}
 function orbitHTML(value){return esc(value).replace(/_(II|I)$/, ' <span class="orbit-branch">$1</span>')}
+// Theory search uses identity only: group, p, Higgsing orbit, title and id.
+// Accepts "E7 p19", "D_5(SU(4))", "SO(8) [3,2,2,1]", "D4 p11 orbit 2,2,1,1",
+// "𝒪=[4,4]_II" and stable ids. A bracketed partition is exact; a bare comma
+// list may omit trailing 1s. A bare "D5" means type D5 or p = 5.
+const searchNormalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/[\s_(){}]/g,'');
+const lieTypePattern=/^(?:a[1-9]|d(?:[4-9]|1\d)|e[678])$/;
+function orbitRequest(text,exact){
+  const value=text.replace(/\s+/g,'').toLowerCase(),branch=(value.match(/_?(ii|i)$/)||[])[1]||'';
+  const digits=value.replace(/_?(?:ii|i)$/,'').replace(/[[\]]/g,'');
+  return digits==='0'?{zero:true}:{parts:digits.split(',').filter(Boolean).map(Number),branch,exact};
+}
+function parseTheoryQuery(query){
+  if(typeof query==='object'&&query)return query;
+  const terms={ids:[],orbits:[],ps:[],groups:[],lies:[],higgsed:null,words:[]};
+  let text=' '+String(query??'').normalize('NFKC').toLowerCase().replace(/[−–]/g,'-')+' ';
+  const take=(pattern,use)=>{text=text.replace(pattern,(...m)=>{use(m);return ' '})};
+  const branch='(?:[_\\s]*(?:ii|i)(?![a-z]))?';
+  take(/(?<![\w-])([ade]\d+-p\d+(?:-y[\w-]*)?)(?![\w-])/g,m=>terms.ids.push(m[1]));
+  take(new RegExp(`(?<![\\w])(?:orbit|y|o)\\s*=?\\s*(0(?![\\d,])|\\[\\s*\\d+(?:\\s*,\\s*\\d+)*\\s*\\]${branch}|\\d+(?:\\s*,\\s*\\d+)*${branch})`,'g'),
+    m=>terms.orbits.push(orbitRequest(m[1],m[1].includes('['))));
+  take(new RegExp(`\\[\\s*\\d+(?:\\s*,\\s*\\d+)*\\s*\\]${branch}`,'g'),m=>terms.orbits.push(orbitRequest(m[0],true)));
+  take(/(?<![\w[])(\d+(?:\s*,\s*\d+)+)(?![\w\]])/g,m=>terms.orbits.push(orbitRequest(m[1],false)));
+  take(/(?<![a-z])d_?\{?(\d+)\}?\s*\(\s*((?:su|so)\s*\(?\s*\d+\s*\)?|e\s*[678])\s*\)/g,m=>{terms.ps.push(Number(m[1]));terms.groups.push(searchNormalize(m[2]))});
+  take(/(?<![a-z])d_\{?(\d+)\}?/g,m=>terms.ps.push(Number(m[1])));
+  take(/(?<![a-z])p\s*=?\s*(\d+)(?![\d,])/g,m=>terms.ps.push(Number(m[1])));
+  take(/(?<![a-z])(su|so)\s*\(?\s*(\d+)\s*\)?/g,m=>terms.groups.push(m[1]+m[2]));
+  take(/(?<![a-z\d])([ade])(\d+)(?![\w(])/g,m=>{const name=m[1]+m[2];
+    if(lieTypePattern.test(name))terms.lies.push(name);else if(m[1]==='d')terms.ps.push(Number(m[2]));else terms.lies.push(name)});
+  take(/(?<![a-z])(?:orbit|nilpotent)(?![a-z])/g,()=>{});
+  take(/(?<![a-z])unhiggsed(?![a-z])/g,()=>{terms.higgsed=false});
+  take(/(?<![a-z])(?:higgsed|higgsing)(?![a-z])/g,()=>{if(terms.higgsed===null)terms.higgsed=true});
+  terms.words=text.split(/\s+/).filter(w=>/[\p{L}\p{N}]/u.test(w)).map(searchNormalize);
+  return terms;
+}
+function orbitMatch(request,orbit){
+  const actual=orbitRequest(String(orbit),true);
+  if(request.zero||actual.zero)return request.zero&&actual.zero?2:0;
+  if(request.branch&&request.branch!==actual.branch)return 0;
+  const n=request.parts.length;
+  if(actual.parts.length<n||request.parts.some((v,i)=>v!==actual.parts[i]))return 0;
+  if(actual.parts.length===n)return 2;
+  return !request.exact&&actual.parts.slice(n).every(v=>v===1)?1:0;
+}
+// Returns a positive rank for a match and 0 otherwise.
 function matchesTheorySearch(row,query){
-  const normalize=value=>String(value).toLowerCase().replace(/[\s_()]/g,'');
-  const explicitOrbit=query.match(/(?:\b[yo]|𝒪)\s*=\s*(0(?!\d)|\[[\d,\s]+\](?:[_\s]*(?:II|I)(?![a-z]))?)/i);
-  if(explicitOrbit){
-    const requested=normalize(explicitOrbit[1]),actual=normalize(row.orbit);
-    if(requested!==actual&&requested!==actual.replace(/i{1,2}$/, ''))return false;
+  const terms=parseTheoryQuery(query),id=String(row.id).toLowerCase();
+  let score=1;
+  for(const want of terms.ids){if(!id.startsWith(want))return 0;score+=id===want?3:1}
+  for(const want of terms.orbits){const s=orbitMatch(want,row.orbit);if(!s)return 0;score+=s}
+  if(terms.ps.some(p=>p!==Number(row.p)))return 0;
+  if(terms.groups.some(g=>g!==searchNormalize(row.group)))return 0;
+  for(const lie of terms.lies){
+    if(lie===String(row.lie_type).toLowerCase())score+=2;
+    else if(lie[0]==='d'&&Number(lie.slice(1))===Number(row.p))score+=1;
+    else return 0;
   }
-  let remaining=explicitOrbit?query.replace(explicitOrbit[0],''):query;
-  const pToken=remaining.match(/(?:^|\s)p\s*=?\s*(\d+)(?=\s|$)/i);
-  if(pToken){if(Number(pToken[1])!==Number(row.p))return false;remaining=remaining.replace(pToken[0],' ');}
-  const haystack=normalize(`${row.title} ${row.id} ${row.lie_type} ${row.group} p${row.p} p=${row.p} Y=${row.orbit} ${row.orbit==='0'?'unhiggsed':'higgsed'}`);
-  return remaining.trim().split(/\s+/).every(token=>haystack.includes(normalize(token)));
+  if(terms.higgsed!==null&&terms.higgsed!==(row.orbit!=='0'))return 0;
+  const haystack=searchNormalize(`${row.title} ${row.id} ${row.lie_type} ${row.group} ${row.flavor?.group||''} p${row.p} p=${row.p} Y=${row.orbit} ${row.orbit==='0'?'unhiggsed':'higgsed'}`);
+  return terms.words.every(word=>haystack.includes(word))?score:0;
+}
+function searchResults(rows,query){
+  const terms=parseTheoryQuery(query);
+  return rows.map((row,index)=>({row,index,score:matchesTheorySearch(row,terms)})).filter(r=>r.score>0)
+    .sort((a,b)=>b.score-a.score||a.index-b.index).map(r=>r.row);
 }
 function filterList(){
   const query=$('#search').value,family=$('#family').value;
-  const rows=catalog.filter(r=>(!family||r.lie_type===family)&&(!$('#unhiggsed').checked||r.orbit==='0')&&matchesTheorySearch(r,query));
+  const rows=searchResults(catalog.filter(r=>(!family||r.lie_type===family)&&(!$('#unhiggsed').checked||r.orbit==='0')),query);
   $('#count').textContent=`${rows.length} / ${catalog.length} entries`;
-  $('#theories').innerHTML=rows.map(r=>`<a class="theory-link ${r.id===selected?'active':''}" href="#${encodeURIComponent(r.id)}" ${r.id===selected?'aria-current="page"':''}><div class="name"><span>D<sub>${r.p}</sub>(${esc(r.group)})</span><span class="theory-type">${esc(r.lie_type)}</span></div><div class="orbit"><span class="orbit-value">${orbitSymbol} = ${orbitHTML(r.orbit)}</span><span class="orbit-kind">${r.orbit==='0'?'Unhiggsed':'Higgsed'}</span></div></a>`).join('')||'<div class="no-results">No matching theories. Try a group name or a different value of p.</div>';
+  $('#theories').innerHTML=rows.map(r=>`<a class="theory-link ${r.id===selected?'active':''}" href="#${encodeURIComponent(r.id)}" ${r.id===selected?'aria-current="page"':''}><div class="name"><span>D<sub>${r.p}</sub>(${esc(r.group)})</span><span class="theory-type">${esc(r.lie_type)}</span></div><div class="orbit"><span class="orbit-value">${orbitSymbol} = ${orbitHTML(r.orbit)}</span><span class="orbit-kind">${r.orbit==='0'?'Unhiggsed':'Higgsed'}</span></div></a>`).join('')||'<div class="no-results">No matching theories. Try a group (E7, SU(4), SO(8)), a value of p (p19) or an orbit ([3,2,2,1]).</div>';
+}
+// Keyboard: "/" focuses search, Enter opens the first match, arrows move
+// through the list and Escape clears the query or returns to the search box.
+function theoryLinks(){return [...(document.querySelectorAll('#theories .theory-link')||[])]}
+function bindSearchKeys(){
+  const search=$('#search'),list=$('#theories');
+  search.addEventListener('keydown',event=>{
+    const links=theoryLinks();
+    if(event.key==='Enter'&&links[0]){event.preventDefault();location.hash=links[0].getAttribute('href');}
+    else if(event.key==='ArrowDown'&&links[0]){event.preventDefault();links[0].focus();}
+    else if(event.key==='Escape'&&search.value){event.preventDefault();search.value='';filterList();}
+  });
+  list.addEventListener('keydown',event=>{
+    const links=theoryLinks(),i=links.indexOf(document.activeElement);if(i<0)return;
+    if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+      event.preventDefault();const next=i+(event.key==='ArrowDown'?1:-1);
+      if(next<0)search.focus();else links[Math.min(next,links.length-1)].focus();
+    }else if(event.key==='Escape'){event.preventDefault();search.focus();}
+  });
+  document.addEventListener?.('keydown',event=>{
+    const target=event.target,typing=target&&(/^(?:input|select|textarea)$/i.test(target.tagName||'')||target.isContentEditable);
+    if(event.key==='/'&&!typing&&!event.metaKey&&!event.ctrlKey&&!event.altKey){event.preventDefault();search.focus();search.select?.();}
+  });
+  document.querySelectorAll('[data-search-example]').forEach(button=>button.onclick=()=>{search.value=button.dataset.searchExample;filterList();search.focus();});
 }
 async function loadCatalog(){
   const data=await api('/api/catalog');catalog=data.theories;
@@ -308,9 +384,10 @@ function renderEvidence(){
 function exportSeries(tex){const d=dataset();if(!d[form])return `% No ${form} series stored for ${record.id}.`;let pieces=[];if(isFlavor()){if(d.characters&&characterCoverage().length)return `% Incomplete ${form} character table for ${record.id}; model ${modelId}; record ${d.id}; missing degrees ${characterCoverage().join(', ')}. No complete series exported.`;if(!d.characters)return `% No coefficientwise ${form} character table for ${record.id}; model ${modelId}; record ${d.id}.\n${form==='schur'?record.schur_character_formula||'':''}`;pieces=selectedCharacterRows().map(r=>{const cells=r.cells.map(c=>{const chars=c.terms.map(t=>charTerm(t,true)).join(' + ')||'0';return form==='macdonald'&&c.T!=='0'?`T^{${c.T}} (${chars})`:chars}).join(' + ')||'0';return r.q==='0'?`(${cells})`:`${form==='hl'?'t':'q'}^{${r.q}} (${cells})`})}else{if(!d[form])return `% No ${form} series stored for ${record.id}.`;pieces=d[form].filter(r=>degree(r.q)<=degree(cutoff)).map(r=>{const coefficient=form==='macdonald'?r.terms.map(t=>t.T==='0'?t.value:`${t.value} T^{${t.T}}`).join(' + ')||'0':r.value;return r.q==='0'?`(${coefficient})`:`${form==='hl'?'t':'q'}^{${r.q}} (${coefficient})`})}const expression=pieces.join(' + ');const scope=`${record.id}; model ${modelId||'unspecified'}; index ${form}; record ${d.id}; display <= ${cutoff}; ${d.index_status?.[form]?.label||'Original evidence'}; ${d.arithmetic||'See original evidence'}; comparison scope: ${comparisonScopeText(d.index_status?.[form])}${isFlavor()&&!(d.index_status?.[form]?.flavor_comparisons||[]).length?'; '+flavorComparisonText(d.index_status?.[form]):''}`;return tex?`% ${scope}.\n% Finite truncation; no higher coefficients asserted.\n\\[\n${expression}\n\\]\n`:expression+`\n(${scope})`}
 function download(name,text,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 for(const selector of ['#search','#family','#unhiggsed'])$(selector).addEventListener('input',filterList);
+bindSearchKeys();
 $('.skip-link').onclick=event=>{event.preventDefault();$('#main').focus();};
 function setNavigation(active){
-  for(const name of ['explore','atlas','methods']){
+  for(const name of ['explore','atlas','methods','progress']){
     const link=$('#'+name+'-link');
     if(!link)continue;
     if(name===active)link.setAttribute('aria-current','page');
@@ -318,6 +395,7 @@ function setNavigation(active){
   }
   document.body.classList.toggle('exploring',active==='explore');
   document.body.classList.toggle('atlas-home-page',active==='atlas');
+  document.body.classList.toggle('progress-view',active==='progress');
 }
 
 function renderHome(){
@@ -336,6 +414,7 @@ function renderHome(){
       <p>We associate a Jacobian ring to an invariant potential and propose that its reduced spectrum is the Higgs branch. Its nilpotent structure and T-filtration retain further protected-operator information. We use jets and arcs to construct candidate Schur and Macdonald indices, and restrict to a Slodowy slice to describe nilpotent Higgsing.</p>
       <div class="construction-line" aria-label="Potential, filtered ring, arc algebra, candidate index"><span>Potential</span><span aria-hidden="true">→</span><span>Filtered ring</span><span aria-hidden="true">→</span><span>Arc algebra</span><span aria-hidden="true">→</span><span>Candidate index</span></div>
     </section>
+    ${!staticSite&&window.AtlasProgress?AtlasProgress.homeHTML(catalog):''}
     <section class="home-reading" aria-labelledby="reading-title"><h2 id="reading-title">Reading an entry</h2><p>Choose a group, p and Higgsing orbit ${orbitSymbol} in the theory browser. Each entry brings its potential and T-filtration together with Schur, Macdonald and Hall–Littlewood series. The displayed order and comparison scope belong to the selected result; a finite series does not assert higher coefficients or an all-orders identification.</p><p class="small">${orbitSymbol} = 0 denotes an unhiggsed theory. Partitions label nilpotent orbits, and I / II distinguish very-even orbits. The atlas records examples; it is not an exhaustive list of the theories in our papers.</p></section>
   </article>`;
   $('#browse-theories').onclick=()=>{$('#search').scrollIntoView?.({block:'center',behavior:'smooth'});$('#search').focus()};
@@ -344,8 +423,12 @@ function renderHome(){
 function route(){
   let id,routeState;
   try{const [identifier,query='']=location.hash.slice(1).split('?');id=decodeURIComponent(identifier);routeState=Object.fromEntries(new URLSearchParams(query));}catch{showLoadError(new Error('This link has an invalid theory identifier.'));return;}
-  if(!id||id==='home'||id==='atlas'||(staticSite&&(id==='explore'||id==='methods'))){
+  if(!id||id==='home'||id==='atlas'||((staticSite||!window.AtlasProgress)&&id==='progress')||(staticSite&&(id==='explore'||id==='methods'))){
     requestId++;selected='';record=null;filterList();setNavigation('atlas');$('#main').removeAttribute('aria-busy');renderHome();return Promise.resolve();
+  }
+  if(id==='progress'){
+    requestId++;selected='';filterList();setNavigation('progress');$('#main').removeAttribute('aria-busy');
+    AtlasProgress.render($('#main'),catalog,{search:searchResults});return Promise.resolve();
   }
   if(id==='methods'){
     requestId++;selected='';filterList();setNavigation('methods');$('#main').removeAttribute('aria-busy');AtlasMethods.render($('#main'));return Promise.resolve();

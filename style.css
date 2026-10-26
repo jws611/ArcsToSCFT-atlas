@@ -134,3 +134,68 @@ main{padding:30px clamp(20px,3vw,48px) 55px;max-width:1500px}
 @media(max-width:900px){.sidebar{padding:22px 16px}.atlas-intro{padding-top:12px}.atlas-intro h1{font-size:41px}.paper-entry{gap:12px;grid-template-columns:26px minmax(0,1fr)}}
 @media(max-width:760px){.workspace{display:block}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:18px}.sidebar-title{display:block;padding-bottom:12px}.sidebar-title h2{font-size:23px}.sidebar-title .eyebrow,.sidebar-foot,.sidebar .search-help{display:none}.sidebar .search-label{font-size:12px}.sidebar .filters{margin:10px 0}.sidebar .list-caption{margin:0 0 8px}.sidebar #theories{display:block;max-height:240px;min-height:0;flex:auto}.sidebar .theory-link{padding:9px 10px}.sidebar .theory-link .name{font-size:18px}.atlas-intro h1{font-size:39px;letter-spacing:-1px}.atlas-intro .home-lead{font-size:20px}.atlas-home h2{font-size:25px}.paper-entry h3{font-size:23px}.construction-line{font-size:16px;gap:8px 13px}main{padding:28px 22px}.topbar{position:static}.atlas-intro{padding-top:3px}}
 @media(max-width:760px){.atlas-home-page .workspace{display:flex;flex-direction:column}.atlas-home-page main{order:0}.atlas-home-page .sidebar{order:1;border-top:1px solid var(--line)}}
+/* Search hints: identity examples, keyboard-friendly and wrapping at phone width. */
+.search-hint{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:9px 2px 0;font-size:11px;color:var(--muted)}
+.search-hint button{padding:2px 8px;border-radius:999px;font-size:11px;line-height:1.6;background:var(--paper);min-height:0}
+.search-hint .search-keys{flex:0 0 100%;font-size:10px}
+@media(pointer:coarse){.search-hint .search-keys{display:none}.search-hint button{min-height:32px}}
+.visually-hidden,.progress-search-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+/* Local goals and progress view. Tables are scoped to avoid series-table rules. */
+.home-goals{border-top:1px solid var(--line);padding:30px 0}
+.goal-list{margin:0 0 14px;padding-left:22px;max-width:860px}
+.goal-list li{font-size:14px;line-height:1.85;color:#52685d;margin:0 0 12px}
+.goal-list strong{color:var(--ink)}
+.progress-page{max-width:1280px;margin:0 auto}
+.progress-page h1{font:36px/1.2 var(--serif);font-weight:400;letter-spacing:-.8px;margin:10px 0 8px}
+.progress-page h2{font:25px/1.3 var(--serif);font-weight:400;margin:34px 0 14px}
+.progress-page h3{font-size:13px;margin:0 0 8px}
+.progress-intro .small{max-width:860px}
+.progress-overall{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.progress-overall>div{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--paper)}
+.progress-tally{list-style:none;margin:0;padding:0}
+.progress-tally li{display:flex;justify-content:space-between;gap:12px;font-size:12px;line-height:1.5;padding:3px 0;border-bottom:1px dotted #e3e8df}
+.progress-tally li:last-child{border-bottom:0}
+.progress-tally strong{font-variant-numeric:tabular-nums}
+.progress-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.progress-card{border:1px solid var(--line);border-radius:9px;padding:14px 14px 4px;background:var(--paper);min-width:0}
+.progress-card header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.progress-card h3{font:20px/1.3 var(--serif);margin:0}
+.progress-card h3 span{font:11px/1 sans-serif;color:var(--muted);letter-spacing:.5px}
+.progress-page table{table-layout:auto;max-height:none;font-size:12px}
+.progress-page .table-wrap{margin:10px 0}
+.progress-page th,.progress-page td{font:12px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:0;min-width:0;max-width:none;white-space:normal;text-align:left;padding:8px 10px;vertical-align:top;color:var(--ink);word-break:normal;overflow-wrap:normal}
+.progress-page thead th{font-size:11px;font-weight:650;color:var(--muted);background:var(--wash);border-bottom:1px solid var(--line)}
+.progress-page tbody tr{border-bottom:1px solid #ecf0e9}
+.progress-counts tbody th{font-weight:650;width:92px}
+.progress-counts .progress-tally li{font-size:11px}
+.progress-counts td .small{font-size:11px}
+.progress-controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end;margin:4px 0 6px}
+.progress-controls input[type=search]{flex:1 1 260px;width:auto}
+.progress-controls label{font-size:10px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.progress-controls select{border:1px solid var(--line);border-radius:5px;padding:6px;background:var(--paper);font-size:12px;color:var(--ink)}
+#progress-count{font-size:11px;color:var(--muted);margin-left:auto}
+.progress-matrix tbody th a{font:16px/1.3 var(--serif);text-decoration:none;color:var(--ink)}
+.progress-matrix tbody th a:hover{text-decoration:underline}
+.progress-orbit{display:block;font:11px/1.5 monospace;color:var(--muted)}
+.progress-cell{display:block;text-decoration:none;font-size:12px;border-radius:5px;padding:2px 4px;margin:-2px -4px}
+.progress-cell:hover{background:var(--wash);text-decoration:underline}
+.progress-cell.match{color:var(--green)}
+.progress-cell.scope-mismatch{color:var(--red)}
+.progress-cell.scope-neutral{color:var(--muted)}
+.progress-cell .small,.progress-matrix td .small{display:block;font-size:10px;color:var(--muted)}
+.progress-matrix td:nth-child(n+3):nth-child(-n+5){white-space:nowrap}
+.progress-matrix td:nth-child(n+6){min-width:180px}
+@media(max-width:760px){
+ .progress-page h1{font-size:29px}
+ .progress-cards{grid-template-columns:minmax(0,1fr)}
+ .progress-matrix-wrap{border:0;overflow:visible}
+ .progress-matrix thead{display:none}
+ .progress-matrix,.progress-matrix tbody,.progress-matrix tr,.progress-matrix th,.progress-matrix td{display:block;width:auto}
+ .progress-matrix tbody tr{border:1px solid var(--line);border-radius:8px;margin:0 0 10px;padding:6px 4px;background:var(--paper)}
+ .progress-matrix td{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;padding:4px 10px;white-space:normal!important;min-width:0!important}
+ .progress-matrix td::before{content:attr(data-label);font-size:10px;color:var(--muted);font-weight:650;padding-top:2px}
+ .progress-matrix td.no-results{display:block}
+ .progress-matrix td.no-results::before{content:none}
+ #progress-count{margin-left:0}
+}
+@media(max-width:760px){.progress-view .workspace{display:flex;flex-direction:column}.progress-view main{order:0}.progress-view .sidebar{order:1;border-top:1px solid var(--line)}}

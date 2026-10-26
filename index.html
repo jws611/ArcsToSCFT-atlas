@@ -4,10 +4,11 @@
 <meta name="results-mode" content="static">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ArcsToSCFT · Theory Atlas</title>
-<link rel="stylesheet" href="./style.css?v=318a80901c2f">
+<link rel="stylesheet" href="./style.css?v=68d4bcff7f7c">
 
 
-<script src="./app.js?v=e9b3f1d2cdec" defer></script>
+
+<script src="./app.js?v=58475c1fb6b7" defer></script>
 
 </head>
 <body>
@@ -16,7 +17,8 @@
 <div class="workspace">
 <aside class="sidebar" aria-label="Theory list">
 <div class="sidebar-title"><h2>Find a theory</h2></div>
-<label class="search-label" for="search">Search theories or Higgsing orbit</label><input id="search" type="search" placeholder="Try E6 p7 or SU(3) 𝒪=[2,1]" autocomplete="off">
+<label class="search-label" for="search">Search by group, p or Higgsing orbit</label><input id="search" type="search" placeholder="E7 p19 or SU(3) 𝒪=[2,1]" autocomplete="off" spellcheck="false" aria-controls="theories" aria-describedby="search-hint">
+<div id="search-hint" class="search-hint"><span>Try</span> <button type="button" data-search-example="E7 p19">E7 p19</button> <button type="button" data-search-example="D_5(SU(4))">D<sub>5</sub>(SU(4))</button> <button type="button" data-search-example="SO(8) [3,2,2,1]">SO(8) [3,2,2,1]</button> <button type="button" data-search-example="D4 p11 orbit 2,2,1,1">D4 p11 orbit 2,2,1,1</button><span class="search-keys">Press / to search; Enter opens the first match; ↓ moves through the list.</span></div>
 <div class="filters"><label>Lie group<select id="family"><option value="">All groups</option></select></label></div>
 <div class="list-caption"><span id="count" role="status" aria-live="polite">Loading</span><label class="check"><input id="unhiggsed" type="checkbox"> Unhiggsed only</label></div>
 <nav id="theories" aria-label="Select a theory"></nav>
